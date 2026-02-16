@@ -58,8 +58,8 @@ Basic Run
 bash
 ```
 python power_monitor.py
-Filter by Groups (CLI)
 ```
+Filter by Groups (CLI)
 bash
 ```
 python power_monitor.py --groups 1.1,2.1
