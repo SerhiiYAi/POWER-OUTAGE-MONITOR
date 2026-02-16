@@ -98,9 +98,14 @@ On startup, the script logs whether a group filter is applied:
 Groups filter applied: ['1.1', '2.1']
 or Executed without groups filter
 All major actions and errors are logged to power_monitor.log.
-License
 
-# License
+
+## Usage of ICS files
+
+The ICS files produced by the script can be imported via your email application like Outlook or inported via Google Calendar setting.
+The script product both new events files and events cancaletion files in case one event replaced by newer event.
+
+## License
 
 GNU General Public License v3.0 (GPLv3)
 
