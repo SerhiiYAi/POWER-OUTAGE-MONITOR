@@ -46,7 +46,7 @@ Installation
 
 Clone the repository:
 ```
-git clone https://github.com/yourusername/power-outage-monitor.git
+git clone https://github.com/SerhiiYAi/power-outage-monitor.git
 cd power-outage-monitor
 ```
 Download ChromeDriver:
