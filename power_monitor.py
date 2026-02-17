@@ -409,10 +409,7 @@ class PowerOutageMonitor:
                     for i, element in enumerate(elements):
                         text = element.text.strip()
                         if text and len(text) > 50:
-                            print(f"FOUND CONTENT with {selector} (element {i}):")
-                            print(f'Text length: {len(text)} chars')
                             parsed = self.parse_power_off_text(text)
-                            print(f"PARSED JSON: {parsed}")
                             found_content = True
                             break
                     if found_content:
@@ -583,7 +580,7 @@ class PowerOutageMonitor:
         cursor.execute('''
             SELECT recid, last_update, name, status, period_from, period_to, calendar_event_id, calendar_event_uid, insert_ts
             FROM periods 
-            WHERE date = ? 
+            WHERE date >= ? 
             ORDER BY name, last_update DESC, insert_ts DESC
         ''', (current_date_ukraine,))
         all_records = cursor.fetchall()
@@ -672,28 +669,29 @@ class PowerOutageMonitor:
         self.logger.info("Generating calendar events JSON...")
         conn = sqlite3.connect(self.db.db_file)
         cursor = conn.cursor()
+        current_date_ukraine = self.get_ukraine_current_date_str()
         if self.group_filter:
             placeholders = ','.join('?' for _ in self.group_filter)
             cursor.execute(f'''
                 SELECT calendar_event_id, calendar_event_uid, date, name, status, period_from, period_to, last_update
                 FROM periods 
-                WHERE calendar_event_state = 'generated' AND substr(name, 8) IN ({placeholders})
+                WHERE date >=? and calendar_event_state = 'generated' AND substr(name, 7) IN ({placeholders})  
                 ORDER BY calendar_event_ts DESC
-            ''', tuple(self.group_filter))
+            '''.format(placeholders=placeholders),(current_date_ukraine,) + tuple(self.group_filter))
         else:
             cursor.execute('''
                 SELECT calendar_event_id, calendar_event_uid, date, name, status, period_from, period_to, last_update
                 FROM periods 
-                WHERE calendar_event_state = 'generated'
+                WHERE calendar_event_state = 'generated' and date >=?
                 ORDER BY calendar_event_ts DESC
-            ''')
+            ''', (current_date_ukraine,))
         create_records = cursor.fetchall()
         if self.group_filter:
             placeholders = ','.join('?' for _ in self.group_filter)
             cursor.execute(f'''
                 SELECT DISTINCT calendar_event_id, calendar_event_uid
                 FROM periods 
-                WHERE calendar_event_state = 'discarded' AND substr(name, 8) IN ({placeholders})
+                WHERE calendar_event_state = 'discarded' AND substr(name, 7) IN ({placeholders})
                 ORDER BY calendar_event_ts DESC
             ''', tuple(self.group_filter))
         else:
@@ -718,6 +716,7 @@ class PowerOutageMonitor:
                 'period_to': period_to,
                 'last_update': last_update
             })
+
         events_to_delete = []
         for record in delete_records:
             events_to_delete.append({
@@ -1081,8 +1080,14 @@ if __name__ == "__main__":
             today_data = monitor.query_periods_by_date(today)
             if today_data:
                 print(f"\nToday's periods ({today}):")
+                seen = set()
                 for record in today_data:
                     name, status_text, period_from, period_to, state, last_update, event_id = record
+                    # Create a tuple of the fields you want to consider for uniqueness
+                    unique_key = (name, status_text, period_from, period_to, state)
+                    if unique_key in seen:
+                        continue  # Skip duplicates
+                    seen.add(unique_key)
                     time_info = f"({period_from}-{period_to})" if period_from and period_to else "(all day)"
                     try:
                         print(f"  {name}: {status_text} {time_info} [{state}]")
