@@ -1,5 +1,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+calendar_events/
+json_data/
 *.py[cod]
 *$py.class
 
