@@ -1,0 +1,72 @@
+Usage Examples sh
+Building the Package
+bash
+
+
+# Install in development mode
+pip install -e .
+
+# Install with development dependencies
+pip install -e ".[dev]"
+
+# Build wheel and source distribution
+python -m build
+
+# Or use the script
+chmod +x scripts/build.sh
+./scripts/build.sh
+Running Tests
+bash
+
+
+# Run all tests
+pytest
+
+# Run tests with coverage
+pytest --cov=power_outage_monitor
+
+# Run specific test file
+pytest tests/test_config.py
+
+# Run tests with verbose output
+pytest -v
+
+# Or use the script
+chmod +x scripts/test.sh
+./scripts/test.sh
+Installing and Running
+bash
+
+
+# Install from wheel
+pip install dist/power_outage_monitor-*.whl
+
+# Run the application
+power-outage-monitor --help
+
+# Or run directly
+python -m power_outage_monitor.main --help
+Development Workflow
+bash
+
+
+# 1. Clone and setup
+git clone <repository>
+cd power-outage-monitor
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# 2. Install in development mode
+pip install -e ".[dev]"
+
+# 3. Run tests
+pytest
+
+# 4. Format code
+black src/ tests/
+
+# 5. Type checking
+mypy src/
+
+# 6. Build package
+python -m build
