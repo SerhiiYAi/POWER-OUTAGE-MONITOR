@@ -14,7 +14,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException, WebDriverException
 import pytz
 
-from db import OutagePeriod
+from .db import OutagePeriod
 
 
 class PowerOutageScraper:
