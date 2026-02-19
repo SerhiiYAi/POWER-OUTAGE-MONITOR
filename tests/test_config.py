@@ -14,7 +14,7 @@ class TestConfig:
     def test_config_initialization(self):
         """Test Config initialization with default values."""
         config = Config()
-        assert config.url == "https://poweron.loe.lviv.ua/"
+        assert config.base_url == "https://poweron.loe.lviv.ua/"
         assert config.output_dir == Path("output")
         assert config.db_path == Path("power_outages.db")
         assert config.continuous is False
@@ -23,12 +23,12 @@ class TestConfig:
     def test_config_with_custom_values(self):
         """Test Config initialization with custom values."""
         config = Config(
-            url="https://custom.url/",
+            base_url="https://custom.url/",
             output_dir=Path("/custom/path"),
             continuous=True,
             interval=1800
         )
-        assert config.url == "https://custom.url/"
+        assert config.base_url == "https://custom.url/"
         assert config.output_dir == Path("/custom/path")
         assert config.continuous is True
         assert config.interval == 1800
