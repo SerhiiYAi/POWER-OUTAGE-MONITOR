@@ -10,9 +10,9 @@ except ImportError:
 __title__ = "power-outage-monitor"
 __description__ = "Automated monitoring and calendar integration system for power outage schedules"
 __author__ = "Your Name"
-__author_email__ = "your.email@example.com"
+__author_email__ = "sergai84g@gmail.com"
 __license__ = "MIT"
-__url__ = "https://github.com/yourusername/power-outage-monitor"
+__url__ = "https://github.com/SerhiiYAi/power-outage-monitor"
 
 # Public API
 from .config import Config
