@@ -1,5 +1,6 @@
 """Tests for utility functions."""
 import pytest
+import logging
 from datetime import datetime
 from unittest.mock import patch, MagicMock
 
