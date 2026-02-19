@@ -1,5 +1,6 @@
 """Power Outage Monitor - Automated monitoring and calendar integration system."""
 
+from pathlib import Path
 # Version information
 try:
     from ._version import version as __version__
