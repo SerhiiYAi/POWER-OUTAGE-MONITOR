@@ -62,8 +62,7 @@ class TestPowerOutageDatabase:
         row = cursor.fetchone()
         
         assert row is not None
-        assert row[1] == "1.1"  
-# group_code
+        assert row[1] == "1.1"         # group_code
         assert row[2] == "2024-01-15"  # date
 
     def test_get_outage_periods(self, temp_db, sample_outage_period):

@@ -91,8 +91,7 @@ class TestICSEventGenerator:
         # Check file content
         content = expected_file.read_text(encoding='utf-8')
         assert "BEGIN:VCALENDAR" in content
-        assert "Група 1.1"
- in content
+        assert "Група 1.1" in content
 
     def test_create_combined_ics_file(self, ics_generator, sample_outage_period, temp_output_dir):
         """Test creating combined ICS file."""

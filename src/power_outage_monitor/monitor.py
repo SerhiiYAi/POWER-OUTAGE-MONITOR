@@ -7,11 +7,11 @@ from typing import List, Dict, Any, Tuple, Optional
 import logging
 from datetime import datetime
 
-from config import Config
-from db import PowerOutageDatabase, OutagePeriod
-from scraper import PowerOutageScraper
-from icsgen import ICSEventGenerator
-from utils import GroupFilter, SmartPeriodComparator
+from .config import Config
+from .db import PowerOutageDatabase, OutagePeriod
+from .scraper import PowerOutageScraper
+from .icsgen import ICSEventGenerator
+from .utils import GroupFilter, SmartPeriodComparator
 
 
 class PowerOutageMonitor:
