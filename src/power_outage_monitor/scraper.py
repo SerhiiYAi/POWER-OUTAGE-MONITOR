@@ -159,9 +159,8 @@ class PowerOutageScraper:
     
     def extract_dynamic_content(self) -> Optional[Dict[str, Any]]:
         """Extract dynamic content from the website"""
-        self.driver = self._setup_driver()
-        
         try:
+            self.driver = self._setup_driver()
             self.logger.info(f"Starting browser...")
             self.logger.info(f"Loading: {self.base_url}")
             self.driver.get(self.base_url)
@@ -217,7 +216,7 @@ class PowerOutageScraper:
             if self.driver:
                 try:
                     self.driver.quit()
-                except:
+                except Exception:
                     pass
     
     def save_raw_data(self, data: Dict[str, Any], json_dir: Path) -> Optional[Path]:

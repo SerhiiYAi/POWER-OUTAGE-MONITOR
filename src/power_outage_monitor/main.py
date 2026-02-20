@@ -3,9 +3,9 @@
 import sys
 from pathlib import Path
 
-from config import parse_arguments, setup_logging
-from monitor import PowerOutageMonitor
-from utils import extract_group_code
+from .config import parse_arguments, setup_logging
+from .monitor import PowerOutageMonitor
+from .utils import extract_group_code
 
 
 def main():

@@ -90,8 +90,7 @@ class TestICSEventGenerator:
             'date': '15.01.2024',
             'name': 'Група 1.1',
             'status': 'Можливе відключення',
-            'period_from': None
-,
+            'period_from': None,
             'period_to': None,
             'last_update': '2024-01-15T10:00:00',
             'calendar_event_id': '15.01.2024_Група 1.1-Можливе відключення',
@@ -122,6 +121,8 @@ class TestICSEventGenerator:
     def test_create_combined_ics_file(self, ics_generator, sample_event_dict, temp_output_dir):
         """Test creating combined ICS file."""
         events = [sample_event_dict]
+        logger = logging.getLogger('test_ics')
+        logger.setLevel(logging.DEBUG)
         
         filepath = ics_generator.create_combined_ics_file(events)
         
@@ -215,7 +216,7 @@ class TestICSEventGenerator:
         txt_files = list(temp_output_dir.glob("*manual_delete.txt"))
         assert len(txt_files) == 1
         
-        content = txt_files[1].read_text(encoding='utf-8')
+        content = txt_files[0].read_text(encoding='utf-8')
         assert "GOOGLE CALENDAR - MANUAL DELETION" in content
         assert "Total events to delete: 2" in content
         assert "Група 1.1" in content
