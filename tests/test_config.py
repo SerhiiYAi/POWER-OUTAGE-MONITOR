@@ -1,9 +1,8 @@
 """Tests for configuration management."""
-import pytest
 import tempfile
 import json
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from power_outage_monitor.config import Config, parse_arguments
 
@@ -28,7 +27,6 @@ class TestConfig:
         assert config.ics_timezone == "Europe/Kiev"
         assert config.calendar_name == "Power Outages"
         assert config.cleanup_days == 30
-        
 
     def test_config_with_custom_values(self):
         """Test Config initialization with custom values."""
@@ -39,7 +37,7 @@ class TestConfig:
             selenium_timeout=60,
             continuous_mode=True,
             check_interval=1800
-        
+
         )
         assert config.base_url == "https://custom.url/"
         assert config.json_data_dir == Path("/custom/json")

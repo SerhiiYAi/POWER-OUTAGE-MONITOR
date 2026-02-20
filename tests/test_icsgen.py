@@ -4,7 +4,6 @@ import tempfile
 import logging
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import patch, MagicMock
 
 from power_outage_monitor.icsgen import ICSEventGenerator
 from power_outage_monitor.db import OutagePeriod
@@ -52,7 +51,7 @@ class TestICSEventGenerator:
         """Create an ICS generator instance."""
         logger = logging.getLogger('test_ics')
         logger.setLevel(logging.DEBUG)
-        
+
         return ICSEventGenerator(
             output_dir=temp_output_dir,
             timezone='Europe/Kiev',
@@ -60,7 +59,7 @@ class TestICSEventGenerator:
             logger=logger
 
 
-            
+
         )
 
     def test_ics_generator_initialization(self, ics_generator, temp_output_dir):
@@ -73,7 +72,7 @@ class TestICSEventGenerator:
     def test_create_ics_content_timed_event(self, ics_generator, sample_event_dict):
         """Test creating ICS content for timed event."""
         content = ics_generator.create_ics_content(sample_event_dict)
-        
+
         assert "BEGIN:VCALENDAR" in content
         assert "END:VCALENDAR" in content
         assert "BEGIN:VEVENT" in content
@@ -96,9 +95,9 @@ class TestICSEventGenerator:
             'calendar_event_id': '15.01.2024_Група 1.1-Можливе відключення',
             'calendar_event_uid': 'test-uid-allday@power-monitor'
         }
-        
+
         content = ics_generator.create_ics_content(all_day_event)
-        
+
         assert "DTSTART;VALUE=DATE:" in content
         assert "DTEND;VALUE=DATE:" in content
         assert "BEGIN:VCALENDAR" in content
@@ -107,11 +106,11 @@ class TestICSEventGenerator:
     def test_create_single_ics_file(self, ics_generator, sample_event_dict, temp_output_dir):
         """Test creating individual ICS file."""
         filepath = ics_generator.create_single_ics_file(sample_event_dict)
-        
+
         assert filepath is not None
         assert filepath.exists()
         assert filepath.suffix == '.ics'
-        
+
         # Check file content
         content = filepath.read_text(encoding='utf-8')
         assert "BEGIN:VCALENDAR" in content
@@ -123,13 +122,13 @@ class TestICSEventGenerator:
         events = [sample_event_dict]
         logger = logging.getLogger('test_ics')
         logger.setLevel(logging.DEBUG)
-        
+
         filepath = ics_generator.create_combined_ics_file(events)
-        
+
         assert filepath is not None
         assert filepath.exists()
         assert filepath.suffix == '.ics'
-        
+
         # Check file content
         content = filepath.read_text(encoding='utf-8')
         assert "BEGIN:VCALENDAR" in content
@@ -162,12 +161,12 @@ class TestICSEventGenerator:
                 'calendar_event_uid': 'test-uid-2@power-monitor'
             }
         ]
-        
+
         filepath = ics_generator.create_combined_ics_file(events)
-        
+
         assert filepath is not None
         assert filepath.exists()
-        
+
         content = filepath.read_text(encoding='utf-8')
         assert content.count("BEGIN:VEVENT") == 2
         assert content.count("END:VEVENT") == 2
@@ -186,13 +185,13 @@ class TestICSEventGenerator:
                 'calendar_event_uid': 'test-uid-2@power-monitor'
             }
         ]
-        
+
         filepath = ics_generator.create_cancellation_ics_file(events_to_cancel)
-        
+
         assert filepath is not None
         assert filepath.exists()
         assert "cancel_events" in filepath.name
-        
+
         content = filepath.read_text(encoding='utf-8')
         assert "METHOD:CANCEL" in content
         assert "STATUS:CANCELLED" in content
@@ -209,13 +208,13 @@ class TestICSEventGenerator:
             '15.01.2024_Група 1.1-Можливе відключення-09:00-12:00',
             '16.01.2024_Група 2.1-Електроенергії немає-14:00-18:00'
         ]
-        
+
         ics_generator.generate_deletion_summary(events_to_delete)
-        
+
         # Find the generated file
         txt_files = list(temp_output_dir.glob("*manual_delete.txt"))
         assert len(txt_files) == 1
-        
+
         content = txt_files[0].read_text(encoding='utf-8')
         assert "GOOGLE CALENDAR - MANUAL DELETION" in content
         assert "Total events to delete: 2" in content
@@ -225,13 +224,13 @@ class TestICSEventGenerator:
     def test_generate_ics_files(self, ics_generator, sample_event_dict, temp_output_dir):
         """Test generating all ICS files."""
         events = [sample_event_dict]
-        
+
         ics_generator.generate_ics_files(events)
-        
+
         # Check that files were created
         ics_files = list(temp_output_dir.glob("*.ics"))
         assert len(ics_files) >= 2  # At least individual + combined
-        
+
         # Check for combined file
         combined_files = [f for f in ics_files if "all_power_events" in f.name]
         assert len(combined_files) == 1
@@ -239,7 +238,7 @@ class TestICSEventGenerator:
     def test_generate_ics_files_empty_list(self, ics_generator, temp_output_dir):
         """Test generating ICS files with empty event list."""
         ics_generator.generate_ics_files([])
-        
+
         # Should not create any files
         ics_files = list(temp_output_dir.glob("*.ics"))
         assert len(ics_files) == 0
@@ -247,7 +246,7 @@ class TestICSEventGenerator:
     def test_parse_ukraine_datetime(self, ics_generator):
         """Test parsing Ukraine datetime."""
         dt = ics_generator.parse_ukraine_datetime("15.01.2024", "09:30")
-        
+
         assert dt.year == 2024
         assert dt.month == 1
         assert dt.day == 15
@@ -258,7 +257,7 @@ class TestICSEventGenerator:
     def test_parse_date_to_datetime(self, ics_generator):
         """Test parsing date to datetime."""
         dt = ics_generator.parse_date_to_datetime("15.01.2024")
-        
+
         assert dt.year == 2024
         assert dt.month == 1
         assert dt.day == 15
@@ -267,7 +266,7 @@ class TestICSEventGenerator:
         """Test text escaping for ICS format."""
         text = "Test, text; with\nspecial chars"
         escaped = ics_generator.escape_text(text)
-        
+
         assert "\\," in escaped
         assert "\\;" in escaped
         assert "\\n" in escaped
@@ -276,7 +275,7 @@ class TestICSEventGenerator:
         """Test datetime formatting for ICS."""
         dt = datetime(2024, 1, 15, 9, 30, 0)
         formatted = ics_generator.format_datetime_for_ics(dt)
-        
+
         assert formatted.endswith("Z")
         assert "20240115" in formatted
         assert "093000" in formatted
@@ -293,9 +292,9 @@ class TestICSEventGenerator:
             'calendar_event_id': '15.01.2024_Група 1.1-Можливе відключення-23:00-06:00',
             'calendar_event_uid': 'test-uid-overnight@power-monitor'
         }
-        
+
         content = ics_generator.create_ics_content(overnight_event)
-        
+
         assert "BEGIN:VCALENDAR" in content
         assert "DTSTART:" in content
         assert "DTEND:" in content
@@ -303,10 +302,10 @@ class TestICSEventGenerator:
         lines = content.split('\r\n')
         dtstart_line = next(line for line in lines if line.startswith('DTSTART:'))
         dtend_line = next(line for line in lines if line.startswith('DTEND:'))
-        
+
         # Extract dates from the datetime strings
         start_date = dtstart_line.split(':')[1][:8]  # YYYYMMDD
         end_date = dtend_line.split(':')[1][:8]      # YYYYMMDD
-        
+
         # End date should be one day after start date for overnight period
         assert int(end_date) > int(start_date)

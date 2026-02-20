@@ -1,4 +1,5 @@
-"""Power Outage Monitor - Automated monitoring and calendar integration system."""
+'''Power Outage Monitor -
+ Automated monitoring and calendar integration system.'''
 
 import logging
 import sys
@@ -8,11 +9,12 @@ from pathlib import Path
 try:
     from ._version import version as __version__
 except ImportError:
-    __version__ = "0.1.0.dev0"
+    __version__ = "1.1.0"
 
 # Package metadata
 __title__ = "power-outage-monitor"
-__description__ = "Automated monitoring and calendar integration system for power outage schedules"
+__description__ = '''Automated monitoring and calendar
+integration system for power outage schedules'''
 __author__ = "Your Name"
 __author_email__ = "sergai84g@gmail.com"
 __license__ = "MIT"
@@ -53,20 +55,20 @@ __all__ = [
     "__author_email__",
     "__license__",
     "__url__",
-    
+
     # Main classes
     "Config",
     "PowerOutageDatabase",
-    "OutagePeriod", 
+    "OutagePeriod",
     "PowerOutageMonitor",
     "PowerOutageScraper",
     "ICSEventGenerator",
     "GroupFilter",
     "SmartPeriodComparator",
-    
+
     # Constants
     "DEFAULT_URL",
-    "DEFAULT_OUTPUT_DIR", 
+    "DEFAULT_OUTPUT_DIR",
     "DEFAULT_DB_NAME",
     "DEFAULT_INTERVAL",
     "SUPPORTED_GROUPS",
@@ -76,10 +78,10 @@ __all__ = [
 def create_default_config(**kwargs):
     """
     Create a default configuration object.
-    
+
     Args:
         **kwargs: Override default configuration values
-        
+
     Returns:
         Config: Configured Config object
     """
@@ -99,14 +101,14 @@ def create_default_config(**kwargs):
 def setup_logging(level=logging.INFO, format_string=None):
     """
     Setup logging for the package.
-    
+
     Args:
         level: Logging level (default: INFO)
         format_string: Custom format string for log messages
     """
     if format_string is None:
         format_string = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    
+
     logging.basicConfig(
         level=level,
         format=format_string,
@@ -114,6 +116,8 @@ def setup_logging(level=logging.INFO, format_string=None):
             logging.StreamHandler(sys.stdout),
         ]
     )
-    
+
     # Set package logger level
+    logger = logging.getLogger(__name__)
     logger.setLevel(level)
+    return logger

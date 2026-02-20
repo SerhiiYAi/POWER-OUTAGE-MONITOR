@@ -1,15 +1,14 @@
 import pytest
-import logging
 from unittest.mock import MagicMock, patch
-from pathlib import Path
-from datetime import datetime
 import json
 
 from power_outage_monitor.scraper import PowerOutageScraper
 
+
 @pytest.fixture
 def logger():
     return MagicMock()
+
 
 @pytest.fixture
 def scraper(logger):
@@ -20,17 +19,19 @@ def scraper(logger):
         logger=logger
     )
 
+
 def test_init_sets_attributes(scraper):
     assert scraper.base_url == "http://test"
     assert scraper.timeout == 5
     assert scraper.headless is True
     assert scraper.logger is not None
 
+
 def test_get_ukraine_current_date_and_str(scraper):
-    date = scraper.get_ukraine_current_date()
     date_str = scraper.get_ukraine_current_date_str()
     assert isinstance(date_str, str)
     assert len(date_str) == 10
+
 
 @pytest.mark.parametrize("input_str,expected", [
     ("14:30 17.02.2026", "17.02.2026 14:30"),
@@ -39,6 +40,7 @@ def test_get_ukraine_current_date_and_str(scraper):
 ])
 def test_normalize_last_update(scraper, input_str, expected):
     assert scraper.normalize_last_update(input_str) == expected
+
 
 def test_parse_power_off_text(scraper):
     text = (
@@ -59,6 +61,7 @@ def test_parse_power_off_text(scraper):
     assert result["groups"][0]["period"]["to"] == "12:00"
     assert result["groups"][1]["status"] == "Електроенергія є"
 
+
 def test_parse_power_off_text_handles_24_00(scraper):
     text = (
         "Графік погодинних відключень на 17.02.2026\n"
@@ -67,6 +70,7 @@ def test_parse_power_off_text_handles_24_00(scraper):
     )
     result = scraper.parse_power_off_text(text)
     assert result["groups"][0]["period"]["to"] == "23:59"
+
 
 def test_validate_schedule_data(scraper):
     # Valid, current date
@@ -101,6 +105,7 @@ def test_validate_schedule_data(scraper):
     assert valid is False
     assert code == "invalid_date"
 
+
 def test_save_raw_data_and_error(scraper, tmp_path):
     data = {"test": "value"}
     result = scraper.save_raw_data(data, tmp_path)
@@ -112,6 +117,7 @@ def test_save_raw_data_and_error(scraper, tmp_path):
     # Test error path
     result = scraper.save_raw_data(None, tmp_path)
     assert result is None
+
 
 def test_convert_to_outage_periods(scraper):
     # Patch OutagePeriod for this test
@@ -136,12 +142,14 @@ def test_convert_to_outage_periods(scraper):
         assert kwargs["period_from"] == "09:00"
         assert kwargs["period_to"] == "12:00"
 
+
 def test_convert_to_outage_periods_empty(scraper):
-    with patch("power_outage_monitor.scraper.OutagePeriod") as MockPeriod:
+    with patch("power_outage_monitor.scraper.OutagePeriod"):
         periods = scraper.convert_to_outage_periods({})
         assert periods == []
         periods = scraper.convert_to_outage_periods({"groups": []})
         assert periods == []
+
 
 def test_convert_to_outage_periods_error(scraper):
     with patch("power_outage_monitor.scraper.OutagePeriod", side_effect=Exception("fail")):
@@ -159,6 +167,7 @@ def test_convert_to_outage_periods_error(scraper):
         with pytest.raises(Exception):
             scraper.convert_to_outage_periods(data)
 
+
 def test_extract_dynamic_content_success(scraper):
     # Patch _setup_driver and driver methods
     driver = MagicMock()
@@ -174,6 +183,7 @@ def test_extract_dynamic_content_success(scraper):
     result = scraper.extract_dynamic_content()
     assert result["date"] == "17.02.2026"
     driver.quit.assert_called_once()
+
 
 def test_extract_dynamic_content_error(scraper):
     scraper._setup_driver = MagicMock(side_effect=Exception("fail"))

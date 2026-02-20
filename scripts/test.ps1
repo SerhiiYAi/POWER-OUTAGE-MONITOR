@@ -43,14 +43,14 @@ try {
     # Install test dependencies
     Write-Host "Installing test dependencies..." -ForegroundColor Yellow
     python -m pip install -e ".[test]"
-    
+
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to install test dependencies"
     }
 
     # Prepare pytest arguments
     $pytestArgs = @()
-    
+
     # Add test file or default test directory
     if ($TestFile) {
         if (-not (Test-Path $TestFile)) {
@@ -82,7 +82,7 @@ try {
     # Run tests
     Write-Host "Running tests with arguments: $($pytestArgs -join ' ')" -ForegroundColor Yellow
     python -m pytest @pytestArgs
-    
+
     if ($LASTEXITCODE -ne 0) {
         throw "Tests failed"
     }
@@ -91,7 +91,7 @@ try {
     Write-Host "=" * 60 -ForegroundColor Green
     Write-Host "Tests completed successfully!" -ForegroundColor Green
     Write-Host "=" * 60 -ForegroundColor Green
-    
+
     if ($Coverage -and (Test-Path "htmlcov")) {
         Write-Host "Coverage report generated in htmlcov/" -ForegroundColor Cyan
         Write-Host "Open htmlcov/index.html in your browser to view detailed coverage" -ForegroundColor Cyan

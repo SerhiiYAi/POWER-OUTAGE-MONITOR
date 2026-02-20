@@ -31,7 +31,7 @@ try {
     # Clean previous builds if requested
     if ($Clean) {
         Write-Host "Cleaning previous builds..." -ForegroundColor Yellow
-        
+
         $dirsToRemove = @("build", "dist", "*.egg-info")
         foreach ($dir in $dirsToRemove) {
             if (Test-Path $dir) {
@@ -39,7 +39,7 @@ try {
                 Write-Verbose "Removed: $dir"
             }
         }
-        
+
         # Also clean __pycache__ directories
         Get-ChildItem -Path . -Name "__pycache__" -Recurse -Directory | Remove-Item -Recurse -Force
         Write-Verbose "Cleaned __pycache__ directories"
@@ -53,7 +53,7 @@ try {
     # Install/upgrade build dependencies
     Write-Host "Installing build dependencies..." -ForegroundColor Yellow
     python -m pip install --upgrade pip setuptools wheel build
-    
+
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to install build dependencies"
     }
@@ -61,7 +61,7 @@ try {
     # Build the package
     Write-Host "Building the package..." -ForegroundColor Yellow
     python -m build
-    
+
     if ($LASTEXITCODE -ne 0) {
         throw "Package build failed"
     }
@@ -70,7 +70,7 @@ try {
     Write-Host "=" * 60 -ForegroundColor Green
     Write-Host "Build completed successfully!" -ForegroundColor Green
     Write-Host "=" * 60 -ForegroundColor Green
-    
+
     if (Test-Path "dist") {
         Write-Host "Distribution files created in dist/:" -ForegroundColor Cyan
         Get-ChildItem -Path "dist" | ForEach-Object {

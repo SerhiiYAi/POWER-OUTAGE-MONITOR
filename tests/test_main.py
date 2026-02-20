@@ -1,14 +1,15 @@
 import pytest
-import sys
-from unittest.mock import patch, MagicMock, call
-
+from unittest.mock import patch, MagicMock
 # Patch all imports from main.py
+
+
 @pytest.fixture
 def main_module():
     with patch("power_outage_monitor.main.parse_arguments") as mock_parse_args, \
          patch("power_outage_monitor.main.setup_logging") as mock_setup_logging, \
          patch("power_outage_monitor.main.PowerOutageMonitor") as mock_monitor_class:
         yield mock_parse_args, mock_setup_logging, mock_monitor_class
+
 
 def test_main_success(monkeypatch, main_module):
     mock_parse_args, mock_setup_logging, mock_monitor_class = main_module
@@ -50,6 +51,7 @@ def test_main_success(monkeypatch, main_module):
     assert logger.info.call_count > 0
     monitor.cleanup_old_data.assert_called_once()
 
+
 def test_main_continuous(monkeypatch, main_module):
     mock_parse_args, mock_setup_logging, mock_monitor_class = main_module
 
@@ -77,6 +79,7 @@ def test_main_continuous(monkeypatch, main_module):
 
     monitor.run_continuous_monitoring.assert_called_once()
 
+
 def test_main_keyboard_interrupt(monkeypatch, main_module):
     mock_parse_args, mock_setup_logging, mock_monitor_class = main_module
 
@@ -102,6 +105,7 @@ def test_main_keyboard_interrupt(monkeypatch, main_module):
             main()
         assert excinfo.value.code == 0
 
+
 def test_main_exception(monkeypatch, main_module):
     mock_parse_args, mock_setup_logging, mock_monitor_class = main_module
 
@@ -126,6 +130,7 @@ def test_main_exception(monkeypatch, main_module):
         with pytest.raises(SystemExit) as excinfo:
             main()
         assert excinfo.value.code == 1
+
 
 def test_main_no_data(monkeypatch, main_module):
     mock_parse_args, mock_setup_logging, mock_monitor_class = main_module

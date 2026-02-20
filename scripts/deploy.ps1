@@ -37,12 +37,12 @@ try {
     # Check git status unless forced
     if (-not $Force) {
         Write-Host "Checking git status..." -ForegroundColor Yellow
-        
+
         $gitStatus = git status --porcelain 2>$null
         if ($LASTEXITCODE -eq 0 -and $gitStatus) {
             Write-Host "Git status output:" -ForegroundColor Yellow
             $gitStatus | ForEach-Object { Write-Host "  $_" -ForegroundColor White }
-            
+
             if (-not $Force) {
                 throw "Working directory is not clean. Please commit your changes first or use -Force to override."
             }
@@ -53,7 +53,7 @@ try {
     if (-not $SkipTests) {
         Write-Host "Running tests..." -ForegroundColor Yellow
         & ".\scripts\test.ps1"
-        
+
         if ($LASTEXITCODE -ne 0) {
             throw "Tests failed. Deployment aborted."
         }
@@ -65,7 +65,7 @@ try {
     if (-not $SkipBuild) {
         Write-Host "Building package..." -ForegroundColor Yellow
         & ".\scripts\build.ps1" -Clean
-        
+
         if ($LASTEXITCODE -ne 0) {
             throw "Build failed. Deployment aborted."
         }
@@ -82,7 +82,7 @@ try {
 ine
     Write-Host "Installing/upgrading twine..." -ForegroundColor Yellow
     python -m pip install --upgrade twine
-    
+
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to install twine"
     }
@@ -90,7 +90,7 @@ ine
     # Check distribution files
     Write-Host "Checking distribution files..." -ForegroundColor Yellow
     python -m twine check dist/*
-    
+
     if ($LASTEXITCODE -ne 0) {
         throw "Distribution files check failed"
     }
@@ -132,7 +132,7 @@ ine
 
     # Upload to PyPI
     python -m twine upload @repoArgs dist/*
-    
+
     if ($LASTEXITCODE -ne 0) {
         throw "Upload failed"
     }
@@ -141,7 +141,7 @@ ine
     Write-Host "=" * 60 -ForegroundColor Green
     Write-Host "Deployment completed successfully!" -ForegroundColor Green
     Write-Host "=" * 60 -ForegroundColor Green
-    
+
     if ($TestPyPI) {
         Write-Host "Package uploaded to Test PyPI: https://test.pypi.org/project/power-outage-monitor/" -ForegroundColor Cyan
         Write-Host "Install with: pip install -i https://test.pypi.org/simple/ power-outage-monitor" -ForegroundColor Cyan

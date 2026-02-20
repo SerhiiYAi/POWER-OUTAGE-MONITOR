@@ -34,10 +34,10 @@ try {
                 throw "Virtual environment '$VenvName' already exists. Use -Force to recreate."
             }
         }
-        
+
         Write-Host "Creating virtual environment: $VenvName" -ForegroundColor Yellow
         python -m venv $VenvName
-        
+
         Write-Host "Activating virtual environment..." -ForegroundColor Yellow
         & ".\$VenvName\Scripts\Activate.ps1"
     }
@@ -59,7 +59,7 @@ try {
     Write-Host "=" * 60 -ForegroundColor Green
     Write-Host "Development environment setup completed!" -ForegroundColor Green
     Write-Host "=" * 60 -ForegroundColor Green
-    
+
     if ($CreateVenv) {
         Write-Host "To activate the virtual environment,
  run:" -ForegroundColor Cyan

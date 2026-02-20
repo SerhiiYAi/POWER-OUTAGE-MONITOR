@@ -100,7 +100,7 @@ power-outage-monitor --groups 1.1,2.1,3.2
 ls output/
 # Expected files:
 # - group_1.1.ics
-# - group_2.1.ics  
+# - group_2.1.ics
 # - group_3.2.ics
 # - all_groups_combined.ics
 # - power_outages.db
