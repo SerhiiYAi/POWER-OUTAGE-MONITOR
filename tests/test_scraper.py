@@ -13,10 +13,7 @@ def logger():
 @pytest.fixture
 def scraper(logger):
     return PowerOutageScraper(
-        base_url="http://test",
-        timeout=5,
-        headless=True,
-        logger=logger
+        base_url="http://test", timeout=5, headless=True, logger=logger
     )
 
 
@@ -33,11 +30,14 @@ def test_get_ukraine_current_date_and_str(scraper):
     assert len(date_str) == 10
 
 
-@pytest.mark.parametrize("input_str,expected", [
-    ("14:30 17.02.2026", "17.02.2026 14:30"),
-    ("2026-02-17T14:30:00", "17.02.2026 14:30"),
-    ("bad format", "bad format"),
-])
+@pytest.mark.parametrize(
+    "input_str,expected",
+    [
+        ("14:30 17.02.2026", "17.02.2026 14:30"),
+        ("2026-02-17T14:30:00", "17.02.2026 14:30"),
+        ("bad format", "bad format"),
+    ],
+)
 def test_normalize_last_update(scraper, input_str, expected):
     assert scraper.normalize_last_update(input_str) == expected
 
@@ -75,21 +75,41 @@ def test_parse_power_off_text_handles_24_00(scraper):
 def test_validate_schedule_data(scraper):
     # Valid, current date
     today = scraper.get_ukraine_current_date().strftime("%d.%m.%Y")
-    data = {"date": today, "date_found": True, "groups": [{"name": "Група 1.1", "status": "Електроенергія є"}]}
+    data = {
+        "date": today,
+        "date_found": True,
+        "groups": [{"name": "Група 1.1", "status": "Електроенергія є"}],
+    }
     valid, code, msg = scraper.validate_schedule_data(data)
     assert valid is True
     assert code == "current_data"
 
     # Valid, future date
-    future = (scraper.get_ukraine_current_date().replace(year=scraper.get_ukraine_current_date().year + 1)).strftime("%d.%m.%Y")
-    data = {"date": future, "date_found": True, "groups": [{"name": "Група 1.1", "status": "Електроенергія є"}]}
+    future = (
+        scraper.get_ukraine_current_date().replace(
+            year=scraper.get_ukraine_current_date().year + 1
+        )
+    ).strftime("%d.%m.%Y")
+    data = {
+        "date": future,
+        "date_found": True,
+        "groups": [{"name": "Група 1.1", "status": "Електроенергія є"}],
+    }
     valid, code, msg = scraper.validate_schedule_data(data)
     assert valid is True
     assert code == "future_data"
 
     # Old date
-    old = (scraper.get_ukraine_current_date().replace(year=scraper.get_ukraine_current_date().year - 1)).strftime("%d.%m.%Y")
-    data = {"date": old, "date_found": True, "groups": [{"name": "Група 1.1", "status": "Електроенергія є"}]}
+    old = (
+        scraper.get_ukraine_current_date().replace(
+            year=scraper.get_ukraine_current_date().year - 1
+        )
+    ).strftime("%d.%m.%Y")
+    data = {
+        "date": old,
+        "date_found": True,
+        "groups": [{"name": "Група 1.1", "status": "Електроенергія є"}],
+    }
     valid, code, msg = scraper.validate_schedule_data(data)
     assert valid is False
     assert code == "old_data"
@@ -100,7 +120,11 @@ def test_validate_schedule_data(scraper):
     assert code == "no_data"
 
     # Invalid date
-    data = {"date": "bad", "date_found": True, "groups": [{"name": "Група 1.1", "status": "Електроенергія є"}]}
+    data = {
+        "date": "bad",
+        "date_found": True,
+        "groups": [{"name": "Група 1.1", "status": "Електроенергія є"}],
+    }
     valid, code, msg = scraper.validate_schedule_data(data)
     assert valid is False
     assert code == "invalid_date"
@@ -129,9 +153,9 @@ def test_convert_to_outage_periods(scraper):
                 {
                     "name": "Група 1.1",
                     "status": "Електроенергії немає",
-                    "period": {"from": "09:00", "to": "12:00"}
+                    "period": {"from": "09:00", "to": "12:00"},
                 }
-            ]
+            ],
         }
         periods = scraper.convert_to_outage_periods(data)
         assert len(periods) == 1
@@ -152,7 +176,9 @@ def test_convert_to_outage_periods_empty(scraper):
 
 
 def test_convert_to_outage_periods_error(scraper):
-    with patch("power_outage_monitor.scraper.OutagePeriod", side_effect=Exception("fail")):
+    with patch(
+        "power_outage_monitor.scraper.OutagePeriod", side_effect=Exception("fail")
+    ):
         data = {
             "date": "17.02.2026",
             "last_update": "17.02.2026 14:30",
@@ -160,9 +186,9 @@ def test_convert_to_outage_periods_error(scraper):
                 {
                     "name": "Група 1.1",
                     "status": "Електроенергії немає",
-                    "period": {"from": "09:00", "to": "12:00"}
+                    "period": {"from": "09:00", "to": "12:00"},
                 }
-            ]
+            ],
         }
         with pytest.raises(Exception):
             scraper.convert_to_outage_periods(data)

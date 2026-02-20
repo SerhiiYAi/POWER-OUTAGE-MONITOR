@@ -1,5 +1,5 @@
-'''Power Outage Monitor -
- Automated monitoring and calendar integration system.'''
+"""Power Outage Monitor -
+Automated monitoring and calendar integration system."""
 
 import logging
 import sys
@@ -13,8 +13,8 @@ except ImportError:
 
 # Package metadata
 __title__ = "power-outage-monitor"
-__description__ = '''Automated monitoring and calendar
-integration system for power outage schedules'''
+__description__ = """Automated monitoring and calendar
+integration system for power outage schedules"""
 __author__ = "Your Name"
 __author_email__ = "sergai84g@gmail.com"
 __license__ = "MIT"
@@ -36,12 +36,42 @@ DEFAULT_INTERVAL = 3600  # 1 hour in seconds
 
 # Supported group codes (can be extended)
 SUPPORTED_GROUPS = [
-    "1.1", "1.2", "1.3", "1.4", "1.5", "1.6",
-    "2.1", "2.2", "2.3", "2.4", "2.5", "2.6",
-    "3.1", "3.2", "3.3", "3.4", "3.5", "3.6",
-    "4.1", "4.2", "4.3", "4.4", "4.5", "4.6",
-    "5.1", "5.2", "5.3", "5.4", "5.5", "5.6",
-    "6.1", "6.2", "6.3", "6.4", "6.5", "6.6",
+    "1.1",
+    "1.2",
+    "1.3",
+    "1.4",
+    "1.5",
+    "1.6",
+    "2.1",
+    "2.2",
+    "2.3",
+    "2.4",
+    "2.5",
+    "2.6",
+    "3.1",
+    "3.2",
+    "3.3",
+    "3.4",
+    "3.5",
+    "3.6",
+    "4.1",
+    "4.2",
+    "4.3",
+    "4.4",
+    "4.5",
+    "4.6",
+    "5.1",
+    "5.2",
+    "5.3",
+    "5.4",
+    "5.5",
+    "5.6",
+    "6.1",
+    "6.2",
+    "6.3",
+    "6.4",
+    "6.5",
+    "6.6",
 ]
 
 
@@ -55,7 +85,6 @@ __all__ = [
     "__author_email__",
     "__license__",
     "__url__",
-
     # Main classes
     "Config",
     "PowerOutageDatabase",
@@ -65,7 +94,6 @@ __all__ = [
     "ICSEventGenerator",
     "GroupFilter",
     "SmartPeriodComparator",
-
     # Constants
     "DEFAULT_URL",
     "DEFAULT_OUTPUT_DIR",
@@ -86,13 +114,13 @@ def create_default_config(**kwargs):
         Config: Configured Config object
     """
     defaults = {
-        'url': DEFAULT_URL,
-        'output_dir': DEFAULT_OUTPUT_DIR,
-        'db_path': DEFAULT_OUTPUT_DIR / DEFAULT_DB_NAME,
-        'continuous': False,
-        'interval': DEFAULT_INTERVAL,
-        'groups': None,
-        'debug': False,
+        "url": DEFAULT_URL,
+        "output_dir": DEFAULT_OUTPUT_DIR,
+        "db_path": DEFAULT_OUTPUT_DIR / DEFAULT_DB_NAME,
+        "continuous": False,
+        "interval": DEFAULT_INTERVAL,
+        "groups": None,
+        "debug": False,
     }
     defaults.update(kwargs)
     return Config(**defaults)
@@ -107,14 +135,14 @@ def setup_logging(level=logging.INFO, format_string=None):
         format_string: Custom format string for log messages
     """
     if format_string is None:
-        format_string = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format_string = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
     logging.basicConfig(
         level=level,
         format=format_string,
         handlers=[
             logging.StreamHandler(sys.stdout),
-        ]
+        ],
     )
 
     # Set package logger level

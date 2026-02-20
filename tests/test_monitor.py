@@ -28,11 +28,15 @@ def logger():
 
 @pytest.fixture
 def monitor(config, logger):
-    with patch("power_outage_monitor.monitor.PowerOutageDatabase") as MockDB, \
-         patch("power_outage_monitor.monitor.PowerOutageScraper") as MockScraper, \
-         patch("power_outage_monitor.monitor.ICSEventGenerator") as MockICS, \
-         patch("power_outage_monitor.monitor.GroupFilter") as MockGroupFilter, \
-         patch("power_outage_monitor.monitor.SmartPeriodComparator") as MockComparator:
+    with patch("power_outage_monitor.monitor.PowerOutageDatabase") as MockDB, patch(
+        "power_outage_monitor.monitor.PowerOutageScraper"
+    ) as MockScraper, patch(
+        "power_outage_monitor.monitor.ICSEventGenerator"
+    ) as MockICS, patch(
+        "power_outage_monitor.monitor.GroupFilter"
+    ) as MockGroupFilter, patch(
+        "power_outage_monitor.monitor.SmartPeriodComparator"
+    ) as MockComparator:
         db = MockDB.return_value
         scraper = MockScraper.return_value
         ics = MockICS.return_value
@@ -40,27 +44,30 @@ def monitor(config, logger):
         comparator = MockComparator.return_value
         # Set up default return values for stats
         db.get_comprehensive_stats.return_value = {
-            'total_records': 10,
-            'unique_dates': 2,
-            'unique_groups': 3,
-            'date_range': {'from': '2024-01-01', 'to': '2024-01-02'},
-            'last_24h_records': 5,
-            'events_sent': 7,
-            'events_pending': 3,
-            'by_state': {'generated': 5, 'discarded': 2},
-            'by_status': {'on': 6, 'off': 4}
+            "total_records": 10,
+            "unique_dates": 2,
+            "unique_groups": 3,
+            "date_range": {"from": "2024-01-01", "to": "2024-01-02"},
+            "last_24h_records": 5,
+            "events_sent": 7,
+            "events_pending": 3,
+            "by_state": {"generated": 5, "discarded": 2},
+            "by_status": {"on": 6, "off": 4},
         }
         db.get_ukraine_current_date_str.return_value = "2024-01-01"
         return PowerOutageMonitor(config, logger)
 
 
 def test_init_creates_dirs_and_logs(config, logger):
-    with patch.object(Path, "mkdir") as mock_mkdir, \
-         patch("power_outage_monitor.monitor.PowerOutageDatabase"), \
-         patch("power_outage_monitor.monitor.PowerOutageScraper"), \
-         patch("power_outage_monitor.monitor.ICSEventGenerator"), \
-         patch("power_outage_monitor.monitor.GroupFilter"), \
-         patch("power_outage_monitor.monitor.SmartPeriodComparator"):
+    with patch.object(Path, "mkdir") as mock_mkdir, patch(
+        "power_outage_monitor.monitor.PowerOutageDatabase"
+    ), patch("power_outage_monitor.monitor.PowerOutageScraper"), patch(
+        "power_outage_monitor.monitor.ICSEventGenerator"
+    ), patch(
+        "power_outage_monitor.monitor.GroupFilter"
+    ), patch(
+        "power_outage_monitor.monitor.SmartPeriodComparator"
+    ):
         PowerOutageMonitor(config, logger)
         # Should be called for both json_data_dir and ics_output_dir
         assert mock_mkdir.call_count == 2
@@ -70,7 +77,10 @@ def test_init_creates_dirs_and_logs(config, logger):
 def test_show_startup_info(monitor, logger):
     monitor.show_startup_info()
     # Should log info about startup and stats
-    assert any("POWER OUTAGE MONITOR - STARTUP INFORMATION" in str(call) for call in logger.info.call_args_list)
+    assert any(
+        "POWER OUTAGE MONITOR - STARTUP INFORMATION" in str(call)
+        for call in logger.info.call_args_list
+    )
 
 
 def test_run_full_process_success(monitor):
@@ -78,7 +88,9 @@ def test_run_full_process_success(monitor):
     monitor.scraper.extract_dynamic_content.return_value = {"date": "2024-01-01"}
     monitor.scraper.validate_schedule_data.return_value = (True, "current_data", "OK")
     monitor.scraper.save_raw_data.return_value = Path("test.json")
-    monitor.stage3_enhanced_database_operations = MagicMock(return_value=Path("events.json"))
+    monitor.stage3_enhanced_database_operations = MagicMock(
+        return_value=Path("events.json")
+    )
     monitor.stage4_enhanced_calendar_generation = MagicMock()
     success, status = monitor.run_full_process()
     assert success is True
@@ -162,7 +174,18 @@ def test_stage3_enhanced_database_operations_insert_error(monitor, tmp_path):
 
 def test_generate_enhanced_calendar_events_json_success(monitor, tmp_path):
     class Event:
-        def __init__(self, calendar_event_id, calendar_event_uid, date, name, status, period_from, period_to, last_update, recid):
+        def __init__(
+            self,
+            calendar_event_id,
+            calendar_event_uid,
+            date,
+            name,
+            status,
+            period_from,
+            period_to,
+            last_update,
+            recid,
+        ):
             self.calendar_event_id = calendar_event_id
             self.calendar_event_uid = calendar_event_uid
             self.date = date
@@ -181,11 +204,19 @@ def test_generate_enhanced_calendar_events_json_success(monitor, tmp_path):
 
     monitor.database.get_events_for_generation.return_value = {
         "events_to_create": [
-            Event("id1", "uid1", "2024-01-01", "Група 1.1", "on", "09:00", "12:00", "2024-01-01T09:00", 1)
+            Event(
+                "id1",
+                "uid1",
+                "2024-01-01",
+                "Група 1.1",
+                "on",
+                "09:00",
+                "12:00",
+                "2024-01-01T09:00",
+                1,
+            )
         ],
-        "events_to_cancel": [
-            CancelEvent("id2", "uid2", 2)
-        ]
+        "events_to_cancel": [CancelEvent("id2", "uid2", 2)],
     }
     monitor.config.ics_output_dir = tmp_path
     result = monitor.generate_enhanced_calendar_events_json()
@@ -205,7 +236,7 @@ def test_generate_enhanced_calendar_events_json_db_error(monitor):
 def test_generate_enhanced_calendar_events_json_file_error(monitor, tmp_path):
     monitor.database.get_events_for_generation.return_value = {
         "events_to_create": [],
-        "events_to_cancel": []
+        "events_to_cancel": [],
     }
     monitor.config.ics_output_dir = tmp_path
     # Patch open to raise error
@@ -238,7 +269,9 @@ def test_stage4_enhanced_calendar_generation_no_events(monitor, tmp_path):
 
 def test_stage4_enhanced_calendar_generation_create_and_cancel(monitor, tmp_path):
     file = tmp_path / "events.json"
-    file.write_text('{"events_to_create": [{"recid": 1, "calendar_event_id": "id1"}], "events_to_cancel": [{"recid": 2, "calendar_event_id": "id2"}]}')
+    file.write_text(
+        '{"events_to_create": [{"recid": 1, "calendar_event_id": "id1"}], "events_to_cancel": [{"recid": 2, "calendar_event_id": "id2"}]}'
+    )
     monitor.ics_generator.create_cancellation_ics_file = MagicMock()
     monitor.ics_generator.generate_deletion_summary = MagicMock()
     monitor.ics_generator.generate_ics_files = MagicMock()

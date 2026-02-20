@@ -1,50 +1,66 @@
 """Tests for utility functions."""
+
 import pytest
 import logging
 from unittest.mock import MagicMock
 
 from power_outage_monitor.utils import (
-    normalize_time, time_to_minutes, minutes_to_time, periods_intersect,
-    extract_group_code, GroupFilter, SmartPeriodComparator, PeriodComparator
+    normalize_time,
+    time_to_minutes,
+    minutes_to_time,
+    periods_intersect,
+    extract_group_code,
+    GroupFilter,
+    SmartPeriodComparator,
+    PeriodComparator,
 )
 from datetime import datetime, timedelta
 
 # --- Utility Function Tests ---
 
 
-@pytest.mark.parametrize("input_str,expected", [
-    ("09:30", "09:30"),
-    ("9:5", "09:05"),
-    ("24:00", "23:59"),
-    ("  09:30  ", "09:30"),
-    ("09.30", "09:30"),
-    ("09:30", "09:30"),
-    ("invalid", "invalid"),
-    ("", ""),
-])
+@pytest.mark.parametrize(
+    "input_str,expected",
+    [
+        ("09:30", "09:30"),
+        ("9:5", "09:05"),
+        ("24:00", "23:59"),
+        ("  09:30  ", "09:30"),
+        ("09.30", "09:30"),
+        ("09:30", "09:30"),
+        ("invalid", "invalid"),
+        ("", ""),
+    ],
+)
 def test_normalize_time(input_str, expected):
     assert normalize_time(input_str) == expected
 
 
-@pytest.mark.parametrize("input_str,expected", [
-    ("00:00", 0),
-    ("01:00", 60),
-    ("12:30", 750),
-    ("23:59", 1439),
-    ("", 0),
-    (None, 0),
-    ("invalid", 0),
-])
+@pytest.mark.parametrize(
+    "input_str,expected",
+    [
+        ("00:00", 0),
+        ("01:00", 60),
+        ("12:30", 750),
+        ("23:59", 1439),
+        ("", 0),
+        (None, 0),
+        ("invalid", 0),
+    ],
+)
 def test_time_to_minutes(input_str, expected):
     assert time_to_minutes(input_str) == expected
 
 
-@pytest.mark.parametrize("minutes,expected", [
-    (0, "00:00"),
-    (60, "01:00"),
-    (750, "12:30"),
-    (1439, "23:59"),
-])
+@pytest.mark.parametrize(
+    "minutes,expected",
+    [
+        (0, "00:00"),
+        (60, "01:00"),
+        (750, "12:30"),
+        (1439, "23:59"),
+    ],
+)
 def test_minutes_to_time(minutes, expected):
     assert minutes_to_time(minutes) == expected
 
@@ -56,13 +72,16 @@ def make_period(period_from, period_to):
     return p
 
 
-@pytest.mark.parametrize("p1,p2,expected", [
-    (make_period("09:00", "12:00"), make_period("11:00", "14:00"), True),
-    (make_period("09:00", "12:00"), make_period("13:00", "16:00"), False),
-    (make_period("23:00", "23:59"), make_period("23:30", "23:59"), True),
-    (make_period("00:00", "01:00"), make_period("01:00", "02:00"), False),
-    (make_period("09:00", "12:00"), make_period("09:00", "12:00"), True),
-])
+@pytest.mark.parametrize(
+    "p1,p2,expected",
+    [
+        (make_period("09:00", "12:00"), make_period("11:00", "14:00"), True),
+        (make_period("09:00", "12:00"), make_period("13:00", "16:00"), False),
+        (make_period("23:00", "23:59"), make_period("23:30", "23:59"), True),
+        (make_period("00:00", "01:00"), make_period("01:00", "02:00"), False),
+        (make_period("09:00", "12:00"), make_period("09:00", "12:00"), True),
+    ],
+)
 def test_periods_intersect(p1, p2, expected):
     assert periods_intersect(p1, p2) == expected
 
@@ -84,16 +103,20 @@ def test_periods_intersect_error():
     assert periods_intersect(p1, p2) is False
 
 
-@pytest.mark.parametrize("group_name,expected", [
-    ("Група 1.1", "1.1"),
-    ("Група 2.5", "2.5"),
-    (None, None),
-    ("", ""),
-    ("Група", "Група"),
-    ("SomeGroup 3.2", "3.2"),
-])
+@pytest.mark.parametrize(
+    "group_name,expected",
+    [
+        ("Група 1.1", "1.1"),
+        ("Група 2.5", "2.5"),
+        (None, None),
+        ("", ""),
+        ("Група", "Група"),
+        ("SomeGroup 3.2", "3.2"),
+    ],
+)
 def test_extract_group_code(group_name, expected):
     assert extract_group_code(group_name) == expected
+
 
 # --- GroupFilter Tests ---
 
@@ -200,6 +223,7 @@ def test_group_filter_no_filter_all_pass():
     filtered = gf.filter_periods(periods)
     assert len(filtered) == 2
 
+
 # --- SmartPeriodComparator Tests ---
 
 
@@ -216,7 +240,7 @@ def test_smart_period_comparator_should_generate():
     db.check_identical_event_exists.return_value = None
     db.find_overlapping_events.return_value = []
     comparator.process_smart_period_comparisons(db, [new_period])
-    db.update_calendar_event_state.assert_called_with(1, 'generated')
+    db.update_calendar_event_state.assert_called_with(1, "generated")
 
 
 def test_smart_period_comparator_should_discard_identical():
@@ -230,7 +254,7 @@ def test_smart_period_comparator_should_discard_identical():
     db.get_ukraine_current_date_str.return_value = "15.01.2024"
     db.check_identical_event_exists.return_value = True
     comparator.process_smart_period_comparisons(db, [new_period])
-    db.update_calendar_event_state.assert_called_with(2, 'discarded')
+    db.update_calendar_event_state.assert_called_with(2, "discarded")
 
 
 def test_smart_period_comparator_overlap_generate_and_cancel():
@@ -248,7 +272,7 @@ def test_smart_period_comparator_overlap_generate_and_cancel():
     old_period.last_update = datetime.now() - timedelta(days=1)
     db.find_overlapping_events.return_value = [old_period]
     comparator.process_smart_period_comparisons(db, [new_period])
-    db.update_calendar_event_state.assert_called_with(3, 'generated')
+    db.update_calendar_event_state.assert_called_with(3, "generated")
     db.mark_events_for_cancellation.assert_called_with([old_period])
 
 
@@ -266,7 +290,7 @@ def test_smart_period_comparator_overlap_discard():
     old_period.last_update = datetime.now()
     db.find_overlapping_events.return_value = [old_period]
     comparator.process_smart_period_comparisons(db, [new_period])
-    db.update_calendar_event_state.assert_called_with(4, 'discarded')
+    db.update_calendar_event_state.assert_called_with(4, "discarded")
 
 
 def test_smart_period_comparator_error_handling():
@@ -275,6 +299,7 @@ def test_smart_period_comparator_error_handling():
     db = MagicMock()
     db.get_ukraine_current_date_str.side_effect = Exception("fail")
     comparator.process_smart_period_comparisons(db, [])
+
 
 # --- PeriodComparator Tests ---
 
@@ -285,7 +310,7 @@ def test_period_comparator_power_available():
     db = MagicMock()
     period = MagicMock()
     period.name = "Група 1.1"
-    period.status = 'Електроенергія є'
+    period.status = "Електроенергія є"
     period.calendar_event_state = None
     period.recid = 1
     period.last_update = datetime.now()
@@ -294,7 +319,7 @@ def test_period_comparator_power_available():
     db.get_ukraine_current_date_str.return_value = "15.01.2024"
     db.get_periods_by_name_and_date.return_value = [period]
     comparator.process_advanced_period_comparisons(db, [period])
-    db.update_calendar_event_state.assert_called_with(1, 'generated')
+    db.update_calendar_event_state.assert_called_with(1, "generated")
 
 
 def test_period_comparator_power_outage_intersection():
@@ -303,7 +328,7 @@ def test_period_comparator_power_outage_intersection():
     db = MagicMock()
     period1 = MagicMock()
     period1.name = "Група 1.1"
-    period1.status = 'Електроенергії немає'
+    period1.status = "Електроенергії немає"
     period1.calendar_event_state = None
     period1.recid = 1
     period1.last_update = datetime.now()
@@ -312,7 +337,7 @@ def test_period_comparator_power_outage_intersection():
     period1.period_to = "12:00"
     period2 = MagicMock()
     period2.name = "Група 1.1"
-    period2.status = 'Електроенергії немає'
+    period2.status = "Електроенергії немає"
     period2.calendar_event_state = None
     period2.recid = 2
     period2.last_update = datetime.now() - timedelta(hours=1)
@@ -322,8 +347,8 @@ def test_period_comparator_power_outage_intersection():
     db.get_ukraine_current_date_str.return_value = "15.01.2024"
     db.get_periods_by_name_and_date.return_value = [period1, period2]
     comparator.process_advanced_period_comparisons(db, [period1, period2])
-    db.update_calendar_event_state.assert_any_call(1, 'generated')
-    db.update_calendar_event_state.assert_any_call(2, 'discarded')
+    db.update_calendar_event_state.assert_any_call(1, "generated")
+    db.update_calendar_event_state.assert_any_call(2, "discarded")
 
 
 def test_period_comparator_no_existing_periods():
@@ -332,7 +357,7 @@ def test_period_comparator_no_existing_periods():
     db = MagicMock()
     period = MagicMock()
     period.name = "Група 1.1"
-    period.status = 'Електроенергія є'
+    period.status = "Електроенергія є"
     db.get_ukraine_current_date_str.return_value = "15.01.2024"
     db.get_periods_by_name_and_date.return_value = []
     comparator.process_advanced_period_comparisons(db, [period])

@@ -1,4 +1,5 @@
 """Tests for configuration management."""
+
 import tempfile
 import json
 from pathlib import Path
@@ -36,8 +37,7 @@ class TestConfig:
             ics_output_dir=Path("/custom/ics"),
             selenium_timeout=60,
             continuous_mode=True,
-            check_interval=1800
-
+            check_interval=1800,
         )
         assert config.base_url == "https://custom.url/"
         assert config.json_data_dir == Path("/custom/json")
@@ -47,7 +47,7 @@ class TestConfig:
 
     def test_parse_arguments_default(self):
         """Test argument parsing with default values."""
-        with patch('sys.argv', ['main.py']):
+        with patch("sys.argv", ["main.py"]):
             config = parse_arguments()
             assert config.continuous_mode is False
             assert config.check_interval == 300
@@ -56,25 +56,25 @@ class TestConfig:
 
     def test_parse_arguments_with_groups(self):
         """Test argument parsing with group filtering."""
-        with patch('sys.argv', ['main.py', '--groups', '1.1,2.1,3.2']):
+        with patch("sys.argv", ["main.py", "--groups", "1.1,2.1,3.2"]):
             config = parse_arguments()
-            assert config.group_filter == ['1.1', '2.1', '3.2']
+            assert config.group_filter == ["1.1", "2.1", "3.2"]
 
     def test_parse_arguments_continuous(self):
         """Test argument parsing with continuous monitoring."""
-        with patch('sys.argv', ['main.py', '--continuous', '--interval', '1800']):
+        with patch("sys.argv", ["main.py", "--continuous", "--interval", "1800"]):
             config = parse_arguments()
             assert config.continuous_mode is True
             assert config.check_interval == 1800
 
     def test_groups_file_loading(self):
         """Test loading groups from JSON file."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump({"group": ["1.1", "2.1"]}, f)
             groups_file = f.name
 
         try:
-            with patch('sys.argv', ['main.py', '--groups-file', groups_file]):
+            with patch("sys.argv", ["main.py", "--groups-file", groups_file]):
                 config = parse_arguments()
                 assert config.group_filter == ["1.1", "2.1"]
         finally:

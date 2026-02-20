@@ -1,4 +1,5 @@
 """Tests for ICS generation."""
+
 import pytest
 import tempfile
 import logging
@@ -29,44 +30,41 @@ class TestICSEventGenerator:
             period_to="12:00",
             last_update="2024-01-15T10:00:00",
             calendar_event_id="15.01.2024_Група 1.1-Можливе відключення-09:00-12:00",
-            calendar_event_uid="test-uid-123@power-monitor"
+            calendar_event_uid="test-uid-123@power-monitor",
         )
 
     @pytest.fixture
     def sample_event_dict(self):
         """Create a sample event dictionary for testing."""
         return {
-            'date': '15.01.2024',
-            'name': 'Група 1.1',
-            'status': 'Можливе відключення',
-            'period_from': '09:00',
-            'period_to': '12:00',
-            'last_update': '2024-01-15T10:00:00',
-            'calendar_event_id': '15.01.2024_Група 1.1-Можливе відключення-09:00-12:00',
-            'calendar_event_uid': 'test-uid-123@power-monitor'
+            "date": "15.01.2024",
+            "name": "Група 1.1",
+            "status": "Можливе відключення",
+            "period_from": "09:00",
+            "period_to": "12:00",
+            "last_update": "2024-01-15T10:00:00",
+            "calendar_event_id": "15.01.2024_Група 1.1-Можливе відключення-09:00-12:00",
+            "calendar_event_uid": "test-uid-123@power-monitor",
         }
 
     @pytest.fixture
     def ics_generator(self, temp_output_dir):
         """Create an ICS generator instance."""
-        logger = logging.getLogger('test_ics')
+        logger = logging.getLogger("test_ics")
         logger.setLevel(logging.DEBUG)
 
         return ICSEventGenerator(
             output_dir=temp_output_dir,
-            timezone='Europe/Kiev',
-            calendar_name='Power Outage Monitor',
-            logger=logger
-
-
-
+            timezone="Europe/Kiev",
+            calendar_name="Power Outage Monitor",
+            logger=logger,
         )
 
     def test_ics_generator_initialization(self, ics_generator, temp_output_dir):
         """Test ICS generator initialization."""
         assert ics_generator.output_dir == temp_output_dir
-        assert ics_generator.timezone == 'Europe/Kiev'
-        assert ics_generator.calendar_name == 'Power Outage Monitor'
+        assert ics_generator.timezone == "Europe/Kiev"
+        assert ics_generator.calendar_name == "Power Outage Monitor"
         assert temp_output_dir.exists()
 
     def test_create_ics_content_timed_event(self, ics_generator, sample_event_dict):
@@ -86,14 +84,14 @@ class TestICSEventGenerator:
     def test_create_ics_content_all_day_event(self, ics_generator):
         """Test creating ICS content for all-day event."""
         all_day_event = {
-            'date': '15.01.2024',
-            'name': 'Група 1.1',
-            'status': 'Можливе відключення',
-            'period_from': None,
-            'period_to': None,
-            'last_update': '2024-01-15T10:00:00',
-            'calendar_event_id': '15.01.2024_Група 1.1-Можливе відключення',
-            'calendar_event_uid': 'test-uid-allday@power-monitor'
+            "date": "15.01.2024",
+            "name": "Група 1.1",
+            "status": "Можливе відключення",
+            "period_from": None,
+            "period_to": None,
+            "last_update": "2024-01-15T10:00:00",
+            "calendar_event_id": "15.01.2024_Група 1.1-Можливе відключення",
+            "calendar_event_uid": "test-uid-allday@power-monitor",
         }
 
         content = ics_generator.create_ics_content(all_day_event)
@@ -103,63 +101,69 @@ class TestICSEventGenerator:
         assert "BEGIN:VCALENDAR" in content
         assert "END:VCALENDAR" in content
 
-    def test_create_single_ics_file(self, ics_generator, sample_event_dict, temp_output_dir):
+    def test_create_single_ics_file(
+        self, ics_generator, sample_event_dict, temp_output_dir
+    ):
         """Test creating individual ICS file."""
         filepath = ics_generator.create_single_ics_file(sample_event_dict)
 
         assert filepath is not None
         assert filepath.exists()
-        assert filepath.suffix == '.ics'
+        assert filepath.suffix == ".ics"
 
         # Check file content
-        content = filepath.read_text(encoding='utf-8')
+        content = filepath.read_text(encoding="utf-8")
         assert "BEGIN:VCALENDAR" in content
         assert "Група 1.1" in content
         assert "test-uid-123@power-monitor" in content
 
-    def test_create_combined_ics_file(self, ics_generator, sample_event_dict, temp_output_dir):
+    def test_create_combined_ics_file(
+        self, ics_generator, sample_event_dict, temp_output_dir
+    ):
         """Test creating combined ICS file."""
         events = [sample_event_dict]
-        logger = logging.getLogger('test_ics')
+        logger = logging.getLogger("test_ics")
         logger.setLevel(logging.DEBUG)
 
         filepath = ics_generator.create_combined_ics_file(events)
 
         assert filepath is not None
         assert filepath.exists()
-        assert filepath.suffix == '.ics'
+        assert filepath.suffix == ".ics"
 
         # Check file content
-        content = filepath.read_text(encoding='utf-8')
+        content = filepath.read_text(encoding="utf-8")
         assert "BEGIN:VCALENDAR" in content
         assert "END:VCALENDAR" in content
         assert "Група 1.1" in content
         assert content.count("BEGIN:VEVENT") == 1
         assert content.count("END:VEVENT") == 1
 
-    def test_create_combined_ics_file_multiple_events(self, ics_generator, temp_output_dir):
+    def test_create_combined_ics_file_multiple_events(
+        self, ics_generator, temp_output_dir
+    ):
         """Test creating combined ICS file with multiple events."""
         events = [
             {
-                'date': '15.01.2024',
-                'name': 'Група 1.1',
-                'status': 'Можливе відключення',
-                'period_from': '09:00',
-                'period_to': '12:00',
-                'last_update': '2024-01-15T10:00:00',
-                'calendar_event_id': '15.01.2024_Група 1.1-Можливе відключення-09:00-12:00',
-                'calendar_event_uid': 'test-uid-1@power-monitor'
+                "date": "15.01.2024",
+                "name": "Група 1.1",
+                "status": "Можливе відключення",
+                "period_from": "09:00",
+                "period_to": "12:00",
+                "last_update": "2024-01-15T10:00:00",
+                "calendar_event_id": "15.01.2024_Група 1.1-Можливе відключення-09:00-12:00",
+                "calendar_event_uid": "test-uid-1@power-monitor",
             },
             {
-                'date': '16.01.2024',
-                'name': 'Група 2.1',
-                'status': 'Електроенергії немає',
-                'period_from': '14:00',
-                'period_to': '18:00',
-                'last_update': '2024-01-16T10:00:00',
-                'calendar_event_id': '16.01.2024_Група 2.1-Електроенергії немає-14:00-18:00',
-                'calendar_event_uid': 'test-uid-2@power-monitor'
-            }
+                "date": "16.01.2024",
+                "name": "Група 2.1",
+                "status": "Електроенергії немає",
+                "period_from": "14:00",
+                "period_to": "18:00",
+                "last_update": "2024-01-16T10:00:00",
+                "calendar_event_id": "16.01.2024_Група 2.1-Електроенергії немає-14:00-18:00",
+                "calendar_event_uid": "test-uid-2@power-monitor",
+            },
         ]
 
         filepath = ics_generator.create_combined_ics_file(events)
@@ -167,7 +171,7 @@ class TestICSEventGenerator:
         assert filepath is not None
         assert filepath.exists()
 
-        content = filepath.read_text(encoding='utf-8')
+        content = filepath.read_text(encoding="utf-8")
         assert content.count("BEGIN:VEVENT") == 2
         assert content.count("END:VEVENT") == 2
         assert "Група 1.1" in content
@@ -177,13 +181,13 @@ class TestICSEventGenerator:
         """Test creating cancellation ICS file."""
         events_to_cancel = [
             {
-                'calendar_event_id': '15.01.2024_Група 1.1-Можливе відключення-09:00-12:00',
-                'calendar_event_uid': 'test-uid-1@power-monitor'
+                "calendar_event_id": "15.01.2024_Група 1.1-Можливе відключення-09:00-12:00",
+                "calendar_event_uid": "test-uid-1@power-monitor",
             },
             {
-                'calendar_event_id': '16.01.2024_Група 2.1-Електроенергії немає-14:00-18:00',
-                'calendar_event_uid': 'test-uid-2@power-monitor'
-            }
+                "calendar_event_id": "16.01.2024_Група 2.1-Електроенергії немає-14:00-18:00",
+                "calendar_event_uid": "test-uid-2@power-monitor",
+            },
         ]
 
         filepath = ics_generator.create_cancellation_ics_file(events_to_cancel)
@@ -192,7 +196,7 @@ class TestICSEventGenerator:
         assert filepath.exists()
         assert "cancel_events" in filepath.name
 
-        content = filepath.read_text(encoding='utf-8')
+        content = filepath.read_text(encoding="utf-8")
         assert "METHOD:CANCEL" in content
         assert "STATUS:CANCELLED" in content
         assert content.count("BEGIN:VEVENT") == 2
@@ -205,8 +209,8 @@ class TestICSEventGenerator:
     def test_generate_deletion_summary(self, ics_generator, temp_output_dir):
         """Test generating deletion summary file."""
         events_to_delete = [
-            '15.01.2024_Група 1.1-Можливе відключення-09:00-12:00',
-            '16.01.2024_Група 2.1-Електроенергії немає-14:00-18:00'
+            "15.01.2024_Група 1.1-Можливе відключення-09:00-12:00",
+            "16.01.2024_Група 2.1-Електроенергії немає-14:00-18:00",
         ]
 
         ics_generator.generate_deletion_summary(events_to_delete)
@@ -215,13 +219,15 @@ class TestICSEventGenerator:
         txt_files = list(temp_output_dir.glob("*manual_delete.txt"))
         assert len(txt_files) == 1
 
-        content = txt_files[0].read_text(encoding='utf-8')
+        content = txt_files[0].read_text(encoding="utf-8")
         assert "GOOGLE CALENDAR - MANUAL DELETION" in content
         assert "Total events to delete: 2" in content
         assert "Група 1.1" in content
         assert "Група 2.1" in content
 
-    def test_generate_ics_files(self, ics_generator, sample_event_dict, temp_output_dir):
+    def test_generate_ics_files(
+        self, ics_generator, sample_event_dict, temp_output_dir
+    ):
         """Test generating all ICS files."""
         events = [sample_event_dict]
 
@@ -283,14 +289,14 @@ class TestICSEventGenerator:
     def test_overnight_period_handling(self, ics_generator):
         """Test handling of overnight periods."""
         overnight_event = {
-            'date': '15.01.2024',
-            'name': 'Група 1.1',
-            'status': 'Можливе відключення',
-            'period_from': '23:00',
-            'period_to': '06:00',  # Next day
-            'last_update': '2024-01-15T10:00:00',
-            'calendar_event_id': '15.01.2024_Група 1.1-Можливе відключення-23:00-06:00',
-            'calendar_event_uid': 'test-uid-overnight@power-monitor'
+            "date": "15.01.2024",
+            "name": "Група 1.1",
+            "status": "Можливе відключення",
+            "period_from": "23:00",
+            "period_to": "06:00",  # Next day
+            "last_update": "2024-01-15T10:00:00",
+            "calendar_event_id": "15.01.2024_Група 1.1-Можливе відключення-23:00-06:00",
+            "calendar_event_uid": "test-uid-overnight@power-monitor",
         }
 
         content = ics_generator.create_ics_content(overnight_event)
@@ -299,13 +305,13 @@ class TestICSEventGenerator:
         assert "DTSTART:" in content
         assert "DTEND:" in content
         # The end time should be on the next day
-        lines = content.split('\r\n')
-        dtstart_line = next(line for line in lines if line.startswith('DTSTART:'))
-        dtend_line = next(line for line in lines if line.startswith('DTEND:'))
+        lines = content.split("\r\n")
+        dtstart_line = next(line for line in lines if line.startswith("DTSTART:"))
+        dtend_line = next(line for line in lines if line.startswith("DTEND:"))
 
         # Extract dates from the datetime strings
-        start_date = dtstart_line.split(':')[1][:8]  # YYYYMMDD
-        end_date = dtend_line.split(':')[1][:8]      # YYYYMMDD
+        start_date = dtstart_line.split(":")[1][:8]  # YYYYMMDD
+        end_date = dtend_line.split(":")[1][:8]  # YYYYMMDD
 
         # End date should be one day after start date for overnight period
         assert int(end_date) > int(start_date)

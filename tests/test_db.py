@@ -1,4 +1,5 @@
 """Tests for database operations."""
+
 import pytest
 import tempfile
 import sqlite3
@@ -15,11 +16,11 @@ class TestPowerOutageDatabase:
     @pytest.fixture
     def temp_db(self):
         """Create a temporary database for testing."""
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             db_path = Path(f.name)
 
         # Create a logger for testing
-        logger = logging.getLogger('test_db')
+        logger = logging.getLogger("test_db")
         logger.setLevel(logging.DEBUG)
 
         db = PowerOutageDatabase(db_path, logger)
@@ -38,11 +39,11 @@ class TestPowerOutageDatabase:
         """Create a sample outage period for testing."""
         return OutagePeriod(
             date="15.01.2024",  # Use the format expected by the database
-            name="Група 1.1",   # This is the group name field
+            name="Група 1.1",  # This is the group name field
             status="Можливе відключення",  # Status field
             period_from="09:00",
             period_to="12:00",
-            last_update="2024-01-15T10:00:00"
+            last_update="2024-01-15T10:00:00",
         )
 
     def test_database_initialization(self, temp_db):
@@ -56,7 +57,7 @@ class TestPowerOutageDatabase:
             tables = [row[0] for row in cursor.fetchall()]
 
             # The actual table names from the schema
-            expected_tables = ['periods', 'metadata']
+            expected_tables = ["periods", "metadata"]
             for table in expected_tables:
                 assert table in tables
 
@@ -81,8 +82,7 @@ class TestPowerOutageDatabase:
 
         # Retrieve periods
         periods = temp_db.get_periods_by_name_and_date(
-            sample_outage_period.name,
-            sample_outage_period.date
+            sample_outage_period.name, sample_outage_period.date
         )
 
         assert len(periods) == 1
@@ -100,8 +100,7 @@ class TestPowerOutageDatabase:
 
         # Verify update
         periods = temp_db.get_periods_by_name_and_date(
-            sample_outage_period.name,
-            sample_outage_period.date
+            sample_outage_period.name, sample_outage_period.date
         )
 
         assert len(periods) == 1
@@ -117,8 +116,7 @@ class TestPowerOutageDatabase:
 
         # Verify
         periods = temp_db.get_periods_by_name_and_date(
-            sample_outage_period.name,
-            sample_outage_period.date
+            sample_outage_period.name, sample_outage_period.date
         )
 
         assert len(periods) == 1
@@ -131,7 +129,7 @@ class TestPowerOutageDatabase:
         # Get current Ukraine date and add a few days to ensure it's in the future
         current_ukraine_date = temp_db.get_ukraine_current_date()
         future_date = current_ukraine_date + timedelta(days=1)
-        future_date_str = future_date.strftime('%d.%m.%Y')
+        future_date_str = future_date.strftime("%d.%m.%Y")
 
         # Create a period with future date
         future_period = OutagePeriod(
@@ -140,7 +138,7 @@ class TestPowerOutageDatabase:
             status="Можливе відключення",
             period_from="09:00",
             period_to="12:00",
-            last_update=datetime.now().isoformat()
+            last_update=datetime.now().isoformat(),
         )
 
         # Insert and update period to 'generated' state
@@ -150,10 +148,10 @@ class TestPowerOutageDatabase:
         # Get events for generation
         events = temp_db.get_events_for_generation()
 
-        assert 'events_to_create' in events
-        assert 'events_to_cancel' in events
-        assert len(events['events_to_create']) == 1
-        assert events['events_to_create'][0].name == "Група 1.1"
+        assert "events_to_create" in events
+        assert "events_to_cancel" in events
+        assert len(events["events_to_create"]) == 1
+        assert events["events_to_create"][0].name == "Група 1.1"
 
     def test_cleanup_old_data(self, temp_db):
         """Test cleaning up old data."""
@@ -165,7 +163,7 @@ class TestPowerOutageDatabase:
             period_from="09:00",
             period_to="12:00",
             last_update="2020-01-01T10:00:00",
-            insert_ts="2020-01-01T10:00:00"  # Very old timestamp
+            insert_ts="2020-01-01T10:00:00",  # Very old timestamp
         )
 
         # Create a recent period
@@ -175,7 +173,7 @@ class TestPowerOutageDatabase:
             status="Можливе відключення",
             period_from="13:00",
             period_to="16:00",
-            last_update="2024-01-15T10:00:00"
+            last_update="2024-01-15T10:00:00",
         )
 
         temp_db.insert_period(old_period)
@@ -185,7 +183,9 @@ class TestPowerOutageDatabase:
         deleted_count = temp_db.cleanup_old_data(days_to_keep=30)
 
         # Should have deleted the old record
-        assert deleted_count >= 0  # At least 0 (might be 1 if the old record was actually deleted)
+        assert (
+            deleted_count >= 0
+        )  # At least 0 (might be 1 if the old record was actually deleted)
 
     def test_get_comprehensive_stats(self, temp_db, sample_outage_period):
         """Test getting comprehensive statistics."""
@@ -195,10 +195,10 @@ class TestPowerOutageDatabase:
         # Get stats
         stats = temp_db.get_comprehensive_stats()
 
-        assert 'total_records' in stats
-        assert 'unique_dates' in stats
-        assert 'unique_groups' in stats
-        assert stats['total_records'] >= 1
+        assert "total_records" in stats
+        assert "unique_dates" in stats
+        assert "unique_groups" in stats
+        assert stats["total_records"] >= 1
 
     def test_export_to_csv(self, temp_db, sample_outage_period):
         """Test exporting data to CSV."""
@@ -206,7 +206,7 @@ class TestPowerOutageDatabase:
         temp_db.insert_period(sample_outage_period)
 
         # Create temporary CSV file
-        with tempfile.NamedTemporaryFile(suffix='.csv', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as f:
             csv_path = Path(f.name)
 
         try:
@@ -215,9 +215,9 @@ class TestPowerOutageDatabase:
 
             # Verify file was created and has content
             assert csv_path.exists()
-            content = csv_path.read_text(encoding='utf-8')
-            assert 'Date' in content  # Header
-            assert 'Група 1.1' in content  # Our test data
+            content = csv_path.read_text(encoding="utf-8")
+            assert "Date" in content  # Header
+            assert "Група 1.1" in content  # Our test data
 
         finally:
             # Cleanup
@@ -238,7 +238,7 @@ class TestPowerOutageDatabase:
             status="Можливе відключення",
             period_from="09:00",
             period_to="12:00",
-            last_update="2024-01-15T11:00:00"  # Different update time
+            last_update="2024-01-15T11:00:00",  # Different update time
         )
 
         # Check for identical event

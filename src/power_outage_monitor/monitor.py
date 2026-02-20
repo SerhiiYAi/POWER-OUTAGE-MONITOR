@@ -24,16 +24,10 @@ class PowerOutageMonitor:
         # Initialize components
         self.database = PowerOutageDatabase(config.db_path, logger)
         self.scraper = PowerOutageScraper(
-            config.base_url,
-            config.selenium_timeout,
-            config.headless,
-            logger
+            config.base_url, config.selenium_timeout, config.headless, logger
         )
         self.ics_generator = ICSEventGenerator(
-            config.ics_output_dir,
-            config.ics_timezone,
-            config.calendar_name,
-            logger
+            config.ics_output_dir, config.ics_timezone, config.calendar_name, logger
         )
         self.group_filter = GroupFilter(config.group_filter, logger)
         self.smart_comparator = SmartPeriodComparator(logger)
@@ -43,7 +37,9 @@ class PowerOutageMonitor:
             directory.mkdir(exist_ok=True)
 
         self.show_startup_info()
-        self.logger.info("Power Outage Monitor initialized with enhanced event tracking")
+        self.logger.info(
+            "Power Outage Monitor initialized with enhanced event tracking"
+        )
         self.logger.info("=" * 60)
 
     def show_startup_info(self) -> None:
@@ -55,28 +51,34 @@ class PowerOutageMonitor:
         self.logger.info("=" * 60)
 
         if self.config.group_filter:
-            self.logger.info(f"Groups filter applied: {sorted(self.config.group_filter)}")
+            self.logger.info(
+                f"Groups filter applied: {sorted(self.config.group_filter)}"
+            )
         else:
             self.logger.info("Executed without groups filter")
 
         self.logger.info(f"Database: {self.config.db_path}")
-        self.logger.info(f"Ukraine current date: {self.database.get_ukraine_current_date_str()}")
+        self.logger.info(
+            f"Ukraine current date: {self.database.get_ukraine_current_date_str()}"
+        )
         self.logger.info(f"Total records: {stats['total_records']}")
         self.logger.info(f"Unique dates: {stats['unique_dates']}")
         self.logger.info(f"Unique groups: {stats['unique_groups']}")
-        self.logger.info(f"Date range: {stats['date_range']['from']} to {stats['date_range']['to']}")
+        self.logger.info(
+            f"Date range: {stats['date_range']['from']} to {stats['date_range']['to']}"
+        )
         self.logger.info(f"Records in last 24h: {stats['last_24h_records']}")
         self.logger.info(f"Events sent: {stats['events_sent']}")
         self.logger.info(f"Events pending: {stats['events_pending']}")
 
-        if stats['by_state']:
+        if stats["by_state"]:
             self.logger.info("Records by calendar state:")
-            for state, count in stats['by_state'].items():
+            for state, count in stats["by_state"].items():
                 self.logger.info(f"  {state}: {count}")
 
-        if stats['by_status']:
+        if stats["by_status"]:
             self.logger.info("Records by power status:")
-            for status, count in stats['by_status'].items():
+            for status, count in stats["by_status"].items():
                 self.logger.info(f"  {status}: {count}")
 
         self.logger.info("=" * 60)
@@ -93,29 +95,37 @@ class PowerOutageMonitor:
             json_data = self.scraper.extract_dynamic_content()
 
             # Validate schedule data
-            is_valid, status_code, status_message = self.scraper.validate_schedule_data(json_data)
+            is_valid, status_code, status_message = self.scraper.validate_schedule_data(
+                json_data
+            )
 
             if not is_valid:
                 self.logger.info(status_message)
-                if status_code in ['no_data', 'no_groups']:
+                if status_code in ["no_data", "no_groups"]:
                     print("Розклад відсутній на сьогодні - файли не створюються")
-                elif status_code == 'old_data':
+                elif status_code == "old_data":
                     print("Розклад застарілий - файли не створюються")
-                elif status_code == 'invalid_date':
+                elif status_code == "invalid_date":
                     print("Розклад має некоректну дату - файли не створюються")
                 return True, status_code
 
             self.logger.info(status_message)
-            if status_code == 'current_data':
-                print(f"Розклад актуальний на {json_data['date']} - обробка продовжується")
-            elif status_code == 'future_data':
-                print(f"Розклад на майбутню дату {json_data['date']} - обробка продовжується")
+            if status_code == "current_data":
+                print(
+                    f"Розклад актуальний на {json_data['date']} - обробка продовжується"
+                )
+            elif status_code == "future_data":
+                print(
+                    f"Розклад на майбутню дату {json_data['date']} - обробка продовжується"
+                )
 
             # Stage 2: Store JSON
             self.logger.info("=" * 60)
             self.logger.info("=== STAGE 2: Store JSON ===")
             self.logger.info("=" * 60)
-            json_filepath = self.scraper.save_raw_data(json_data, self.config.json_data_dir)
+            json_filepath = self.scraper.save_raw_data(
+                json_data, self.config.json_data_dir
+            )
             if not json_filepath:
                 self.logger.error("Stage 2 failed - JSON storage")
                 return False, "error"
@@ -124,7 +134,9 @@ class PowerOutageMonitor:
             self.logger.info("=" * 60)
             self.logger.info("=== STAGE 3: Enhanced database operations ===")
             self.logger.info("=" * 60)
-            events_json_filepath = self.stage3_enhanced_database_operations(json_filepath)
+            events_json_filepath = self.stage3_enhanced_database_operations(
+                json_filepath
+            )
             if not events_json_filepath:
                 self.logger.error("Stage 3 failed - database operations")
                 return False, "error"
@@ -139,7 +151,9 @@ class PowerOutageMonitor:
             self.logger.error(f"Process error: {e}")
             return False, "error"
 
-    def stage3_enhanced_database_operations(self, json_filepath: Path) -> Optional[Path]:
+    def stage3_enhanced_database_operations(
+        self, json_filepath: Path
+    ) -> Optional[Path]:
         """Enhanced Stage 3: Database operations with smart overlap detection"""
 
         if not json_filepath or not json_filepath.exists():
@@ -147,7 +161,7 @@ class PowerOutageMonitor:
             return None
 
         try:
-            with open(json_filepath, 'r', encoding='utf-8') as f:
+            with open(json_filepath, "r", encoding="utf-8") as f:
                 data = json.load(f)
             self.logger.debug(f"Loaded JSON data: {len(data)}")
         except Exception as e:
@@ -197,7 +211,9 @@ class PowerOutageMonitor:
         # Use smart period comparator for enhanced logic
         try:
             self.logger.debug("Starting smart period comparison...")
-            self.smart_comparator.process_smart_period_comparisons(self.database, inserted_periods)
+            self.smart_comparator.process_smart_period_comparisons(
+                self.database, inserted_periods
+            )
             self.logger.debug("Smart period comparison completed")
         except Exception as e:
             self.logger.error(f"Error in smart period comparison: {e}")
@@ -221,50 +237,52 @@ class PowerOutageMonitor:
             self.logger.debug("Call for get_events_for_generation")
             self.logger.debug(f"Current group filter: {self.config.group_filter}")
             # Get events that need processing
-            events_data = self.database.get_events_for_generation(self.config.group_filter)
+            events_data = self.database.get_events_for_generation(
+                self.config.group_filter
+            )
         except Exception as e:
             self.logger.error(f"Error in get_events_for_generation: {e}")
             return None
 
-        events_to_create = events_data['events_to_create']
-        events_to_cancel = events_data['events_to_cancel']
+        events_to_create = events_data["events_to_create"]
+        events_to_cancel = events_data["events_to_cancel"]
         # Prepare result
         result = {
-            'events_to_create': [
+            "events_to_create": [
                 {
-                    'calendar_event_id': event.calendar_event_id,
-                    'calendar_event_uid': event.calendar_event_uid,
-                    'date': event.date,
-                    'name': event.name,
-                    'status': event.status,
-                    'period_from': event.period_from,
-                    'period_to': event.period_to,
-                    'last_update': event.last_update,
-                    'recid': event.recid  # Include recid for tracking
+                    "calendar_event_id": event.calendar_event_id,
+                    "calendar_event_uid": event.calendar_event_uid,
+                    "date": event.date,
+                    "name": event.name,
+                    "status": event.status,
+                    "period_from": event.period_from,
+                    "period_to": event.period_to,
+                    "last_update": event.last_update,
+                    "recid": event.recid,  # Include recid for tracking
                 }
                 for event in events_to_create
             ],
-            'events_to_cancel': [
+            "events_to_cancel": [
                 {
-                    'calendar_event_id': event.calendar_event_id,
-                    'calendar_event_uid': event.calendar_event_uid,
-                    'recid': event.recid
+                    "calendar_event_id": event.calendar_event_id,
+                    "calendar_event_uid": event.calendar_event_uid,
+                    "recid": event.recid,
                 }
                 for event in events_to_cancel
             ],
-            'generated_at': datetime.now().isoformat(),
-            'summary': {
-                'create_count': len(events_to_create),
-                'cancel_count': len(events_to_cancel)
-            }
+            "generated_at": datetime.now().isoformat(),
+            "summary": {
+                "create_count": len(events_to_create),
+                "cancel_count": len(events_to_cancel),
+            },
         }
         # Save to file
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"{timestamp}_calendar_events.json"
         filepath = self.config.ics_output_dir / filename
 
         try:
-            with open(filepath, 'w', encoding='utf-8') as f:
+            with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(result, f, ensure_ascii=False, indent=2)
 
             self.logger.info(f"[OK] Enhanced calendar events JSON created: {filename}")
@@ -289,28 +307,34 @@ class PowerOutageMonitor:
             return
 
         try:
-            with open(events_json_filepath, 'r', encoding='utf-8') as f:
+            with open(events_json_filepath, "r", encoding="utf-8") as f:
                 events_data = json.load(f)
         except Exception as e:
             self.logger.error(f"Error loading events JSON: {e}")
             return
 
-        events_to_create = events_data.get('events_to_create', [])
-        events_to_cancel = events_data.get('events_to_cancel', [])
+        events_to_create = events_data.get("events_to_create", [])
+        events_to_cancel = events_data.get("events_to_cancel", [])
 
         if not events_to_create and not events_to_cancel:
-            self.logger.info("No events to create or cancel - skipping calendar file generation")
+            self.logger.info(
+                "No events to create or cancel - skipping calendar file generation"
+            )
             return
 
         # Generate cancellation files for events to cancel
         if events_to_cancel:
             self.ics_generator.create_cancellation_ics_file(events_to_cancel)
-            self.ics_generator.generate_deletion_summary([event['calendar_event_id'] for event in events_to_cancel])
+            self.ics_generator.generate_deletion_summary(
+                [event["calendar_event_id"] for event in events_to_cancel]
+            )
 
             # Mark cancelled events as processed
             for event in events_to_cancel:
-                self.database.update_calendar_event_state(event['recid'], 'discarded')
-                self.logger.debug(f"Marked cancelled event {event['recid']} as discarded")
+                self.database.update_calendar_event_state(event["recid"], "discarded")
+                self.logger.debug(
+                    f"Marked cancelled event {event['recid']} as discarded"
+                )
 
         # Generate ICS files for new events
         if events_to_create:
@@ -318,14 +342,18 @@ class PowerOutageMonitor:
 
             # Mark created events as sent
             for event in events_to_create:
-                self.database.mark_event_as_sent(event['recid'])
+                self.database.mark_event_as_sent(event["recid"])
                 self.logger.debug(f"Marked event {event['recid']} as sent")
 
-        self.logger.info(f"[OK] Enhanced calendar generation completed: {len(events_to_create)} created, {len(events_to_cancel)} cancelled")
+        self.logger.info(
+            f"[OK] Enhanced calendar generation completed: {len(events_to_create)} created, {len(events_to_cancel)} cancelled"
+        )
 
     def run_continuous_monitoring(self, interval_minutes: int = 5) -> None:
         """Run continuous monitoring with specified interval"""
-        self.logger.info(f"Starting continuous monitoring (every {interval_minutes} minutes)")
+        self.logger.info(
+            f"Starting continuous monitoring (every {interval_minutes} minutes)"
+        )
         self.logger.info("Press Ctrl+C to stop")
 
         while True:
@@ -335,13 +363,23 @@ class PowerOutageMonitor:
                 if success:
                     stats = self.database.get_comprehensive_stats()
                     if status == "success":
-                        self.logger.info("Моніторинг: успішно, статус: розклад оброблено")
-                        self.logger.info(f"Database: {stats['total_records']} total records, {stats['last_24h_records']} in last 24h")
-                        self.logger.info(f"Events: {stats['events_sent']} sent, {stats['events_pending']} pending")
+                        self.logger.info(
+                            "Моніторинг: успішно, статус: розклад оброблено"
+                        )
+                        self.logger.info(
+                            f"Database: {stats['total_records']} total records, {stats['last_24h_records']} in last 24h"
+                        )
+                        self.logger.info(
+                            f"Events: {stats['events_sent']} sent, {stats['events_pending']} pending"
+                        )
                     elif status == "no_data":
-                        self.logger.info("Моніторинг: успішно, статус: розклад відсутній")
+                        self.logger.info(
+                            "Моніторинг: успішно, статус: розклад відсутній"
+                        )
                     elif status == "old_data":
-                        self.logger.info("Моніторинг: успішно, статус: розклад застарілий")
+                        self.logger.info(
+                            "Моніторинг: успішно, статус: розклад застарілий"
+                        )
                     else:
                         self.logger.info(f"Моніторинг: успішно, статус: {status}")
                 else:
@@ -371,7 +409,9 @@ class PowerOutageMonitor:
         """Query periods by specific date"""
         return self.database.query_periods_by_date(date)
 
-    def export_data_to_csv(self, output_file: str = 'power_outages_export.csv') -> Optional[str]:
+    def export_data_to_csv(
+        self, output_file: str = "power_outages_export.csv"
+    ) -> Optional[str]:
         """Export data to CSV file"""
         try:
             output_path = Path(output_file)
@@ -386,9 +426,9 @@ class PowerOutageMonitor:
         stats = self.database.get_comprehensive_stats()
 
         return {
-            'total_events': stats['total_records'],
-            'events_sent': stats['events_sent'],
-            'events_pending': stats['events_pending'],
-            'events_by_state': stats['by_state'],
-            'last_24h_activity': stats['last_24h_records']
+            "total_events": stats["total_records"],
+            "events_sent": stats["events_sent"],
+            "events_pending": stats["events_pending"],
+            "events_by_state": stats["by_state"],
+            "last_24h_activity": stats["last_24h_records"],
         }
