@@ -1,0 +1,123 @@
+Execution Examples
+1. Basic Build
+powershell
+
+
+# Simple build
+.\scripts\build.ps1
+
+# Build with clean (removes previous builds)
+.\scripts\build.ps1 -Clean
+
+# Verbose build
+.\scripts\build.ps1 -Clean -Verbose
+2. Running Tests
+powershell
+
+
+# Run all tests with coverage
+.\scripts\test.ps1
+
+# Run tests without coverage
+.\scripts\test.ps1 -Coverage:$false
+
+# Run specific test file
+.\scripts\test.ps1 -TestFile "tests\test_config.py"
+
+# Run tests with verbose output and fail fast
+.\scripts\test.ps1 -Verbose -FailFast
+
+# Run tests with custom coverage threshold
+.\scripts\test.ps1 -CoverageThreshold 90
+3. Development Setup
+powershell
+
+
+# Basic setup (install in current environment)
+.\scripts\dev-setup.ps1
+
+# Create new virtual environment and setup
+.\scripts\dev-setup.ps1 -CreateVenv -VenvName "power-monitor-dev"
+
+# Setup without pre-commit hooks
+.\scripts\dev-setup.ps1 -InstallPreCommit:$false
+
+# Force recreate virtual environment
+.\scripts\dev-setup.ps1 -CreateVenv -Force
+4. Deployment
+powershell
+
+
+# Deploy to PyPI (runs tests and build first)
+.\scripts\deploy.ps1
+
+# Deploy to Test PyPI
+.\scripts\deploy.ps1 -TestPyPI
+
+# Deploy without running tests (not recommended)
+.\scripts\deploy.ps1 -SkipTests
+
+# Dry run (see what would be uploaded)
+.\scripts\deploy.ps1 -DryRun
+
+# Force deploy (skip git status check)
+.\scripts\deploy.ps1 -Force
+
+# Deploy to custom repository
+.\scripts\deploy.ps1 -Repository "my-private-pypi"
+5. Complete Development Workflow
+powershell
+
+
+# 1. Setup development environment
+.\scripts\dev-setup.ps1 -CreateVenv -VenvName "power-monitor-dev"
+
+# 2. Activate virtual environment
+.\power-monitor-dev\Scripts\Activate.ps1
+
+# 3. Run tests during development
+.\scripts\test.ps1 -Verbose
+
+# 4. Build package
+.\scripts\build.ps1 -Clean
+
+# 5. Test deployment to Test PyPI
+.\scripts\deploy.ps1 -TestPyPI -DryRun
+
+# 6. Deploy to Test PyPI
+.\scripts\deploy.ps1 -TestPyPI
+
+# 7. Deploy to production PyPI
+.\scripts\deploy.ps1
+6. CI/CD Pipeline Simulation
+powershell
+
+
+# Simulate CI/CD pipeline
+Write-Host "=== CI/CD Pipeline Simulation ===" -ForegroundColor Cyan
+
+# Setup
+.\scripts\dev-setup.ps1
+
+# Test
+.\scripts\test.ps1 -CoverageThreshold 80
+
+# Build
+.\scripts\build.ps1 -Clean
+
+# Deploy (dry run)
+.\scripts\deploy.ps1 -DryRun
+
+Write-Host "=== Pipeline Completed ===" -ForegroundColor Green
+7. Quick Commands
+powershell
+
+
+# Quick test and build
+.\scripts\test.ps1 && .\scripts\build.ps1
+
+# Quick deploy to test PyPI
+.\scripts\test.ps1 && .\scripts\build.ps1 -Clean && .\scripts\deploy.ps1 -TestPyPI
+
+# Full pipeline
+.\scripts\test.ps1 && .\scripts\build.ps1 -Clean && .\scripts\deploy.ps1

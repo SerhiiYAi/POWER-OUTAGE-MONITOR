@@ -1,5 +1,8 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+power_outage_monitor/__pycache__/
+calendar_events/
+json_data/
 *.py[cod]
 *$py.class
 
@@ -13,6 +16,7 @@ develop-eggs/
 dist/
 downloads/
 eggs/
+power_outage_monitor.egg-info/
 .eggs/
 lib/
 lib64/

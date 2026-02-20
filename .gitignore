@@ -1,0 +1,5 @@
+__pycache__/
+/.coverage
+/selenium_all_content.txt
+/power_outages.db
+/power_monitor.log
